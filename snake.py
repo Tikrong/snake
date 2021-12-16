@@ -12,7 +12,7 @@ MoveEveryMilliseconds = 1000
 
 #screen size
 screen_height = 500
-screen_width = 300
+screen_width = 500
 
 # colors
 WHITE = (255,255,255)
@@ -22,15 +22,13 @@ RED = (255,0,0)
 YELLOW = (255,255,0)
 
 # sizes
-tile_size = 30
+tile_size = 20
 
 screen = pygame.display.set_mode((screen_width, screen_height))
 
-game = GameField()
 snake = Snake(3, (3,3))
-game.DrawField(snake)
-
-game.PlaceFood()
+game = GameField(15,15,snake)
+game.DrawField()
 
 running = True
 while running:
@@ -39,30 +37,33 @@ while running:
             running = False
         if event.type == pygame.KEYDOWN:
             if event.key == locals.K_LEFT:
-                snake.MoveLeft()
+                game.snake.MoveLeft()
                 print("left")
-                game.DrawField(snake)
+                #game.DrawField()
                 timeSinceLastMovement = 0
             elif event.key == locals.K_RIGHT:
-                snake.MoveRight()
+                game.snake.MoveRight()
                 print("right")
-                game.DrawField(snake)
+                #game.DrawField()
                 timeSinceLastMovement = 0
             elif event.key == locals.K_UP:
-                snake.MoveUp()
+                game.snake.MoveUp()
                 print("up")
-                game.DrawField(snake)
+                #game.DrawField()
                 timeSinceLastMovement = 0
             elif event.key == locals.K_DOWN:
-                snake.MoveDown()
+                game.snake.MoveDown()
                 print("down")
-                game.DrawField(snake)
+                #game.DrawField()
                 timeSinceLastMovement = 0
     
     if timeSinceLastMovement > MoveEveryMilliseconds:
-        snake.MoveOnYourOwn()
-        game.DrawField(snake)
+        game.snake.MoveOnYourOwn()
+        #game.DrawField()
         timeSinceLastMovement = 0
+
+    game.DidSnakeGetFood()
+    game.DrawField()
 
     # draw gamefield grid, walls, snake
     for i in range(game.height):
@@ -82,10 +83,10 @@ while running:
                 rect = pygame.Rect(j*tile_size, i*tile_size, tile_size, tile_size)
                 pygame.draw.rect(screen, YELLOW, rect, 0)
 
-    if game.IsSnakeCollided(snake):
+    if game.IsSnakeCollided():
         print("GAME OVER")
     
-    game.DidSnakeGetFood(snake)
+    
         
    
     pygame.display.flip()
