@@ -96,14 +96,19 @@ class GameField():
     # check whether snake make a valid move, i.e. not collided with a wall or itself
     # returns true if snake is collided or false if it is alive
     def IsSnakeCollided(self):
-        # check whether snake has collided with a wall
-        y,x = self.snake.cells[-1]
-        if self.field[y][x] == 2:
-            return True
         
-        # check whether snake has collided with itself
-        if len(set(self.snake.cells)) < self.snake.size:
+        y,x = self.snake.cells[-1]
+        # check whether snake has collided with a wall
+        if self.field[y][x] == 2:
+            print(1)
             return True
+            
+        # check whether snake has collided with itself
+        if self.field[y][x] == 1:
+            print(2)
+            return True
+            
+        
         
         return False
 

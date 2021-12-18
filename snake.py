@@ -2,6 +2,16 @@ import pygame
 from pygame import locals
 from helpers import*
 
+# It must be improved
+def RednerGameOver():
+    while True:
+        rect = pygame.Rect(0,0, screen_width, screen_height)
+        pygame.draw.rect(screen, BLACK, rect)
+        myfont.render_to(screen, rect, "GAME OVER", RED)
+        pygame.display.flip()
+        
+
+
 pygame.init()
 
 clock = pygame.time.Clock()
@@ -92,15 +102,20 @@ def GameLoop(timeSinceLastMovement, score):
                 elif event.key == locals.K_q:
                     DrawQuitMenu(timeSinceLastMovement, score)
                     running = False
+                if game.IsSnakeCollided():
+                    RednerGameOver()
         
         if timeSinceLastMovement > MoveEveryMilliseconds:
             game.snake.MoveOnYourOwn()
             #game.DrawField()
             timeSinceLastMovement = 0
+            if game.IsSnakeCollided():
+                RednerGameOver()
+                running = False
 
         if game.DidSnakeGetFood():
             score += 1
-        game.DrawField()
+        
 
         # draw gamefield grid, walls, snake
         for i in range(game.height):
@@ -126,8 +141,8 @@ def GameLoop(timeSinceLastMovement, score):
         myfont.render_to(screen, quitRect, "(Q)uit", WHITE)
 
 
-        if game.IsSnakeCollided():
-            print("GAME OVER")
+        game.DrawField()
+            
         
         pygame.display.flip()
         timeSinceLastMovement += clock.tick(60)
