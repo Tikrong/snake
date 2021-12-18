@@ -1,15 +1,55 @@
 import pygame
 from pygame import locals
+import pygame.freetype
+from pygame.constants import QUIT
 from helpers import*
 
 # It must be improved
-def RednerGameOver():
-    while True:
-        rect = pygame.Rect(0,0, screen_width, screen_height)
-        pygame.draw.rect(screen, BLACK, rect)
-        myfont.render_to(screen, rect, "GAME OVER", RED)
+def RednerGameOver():    
+    rect = pygame.Rect(0,0, screen_width, screen_height)
+    pygame.draw.rect(screen, BLACK, rect)
+    myfont.render_to(screen, rect, "GAME OVER", RED)
+    pygame.display.flip()
+    
+
+def RenderMainMenu():
+    running = True
+    while running:
+        for event in pygame.event.get():
+            if event.type == QUIT:
+                running = False
+    
+        screen.fill(BLACK)
+
+        # game logo
+        rect = myfont.get_rect("SNAKE")
+        rect.left = (screen_width - rect.width) / 2
+        rect.top = 10
+        myfont.render_to(screen, rect, None, WHITE)
+
+        # render menu options
+        rectPlay = myfont.get_rect("(P)lay")
+        rectPlay.left = (screen_width - rectPlay.width) / 2
+        rectPlay.top = 200
+        myfont.render_to(screen, rectPlay, None, WHITE)
+
+        rectLeaderboard = myfont.get_rect("(L)eaderboard")
+        rectLeaderboard.left = (screen_width - rectLeaderboard.width) / 2
+        rectLeaderboard.top = rectPlay.bottom + 10
+        myfont.render_to(screen, rectLeaderboard, None, WHITE)
+
+        rectCredits = myfont.get_rect("(C)redits")
+        rectCredits.left = (screen_width - rectCredits.width) / 2
+        rectCredits.top = rectLeaderboard.bottom + 10
+        myfont.render_to(screen, rectCredits, None, WHITE)
+
+        rectQuit = myfont.get_rect("(Q)uit")
+        rectQuit.left = (screen_width - rectQuit.width) / 2
+        rectQuit.top = rectCredits.bottom + 10
+        myfont.render_to(screen, rectQuit, None, WHITE)
+
         pygame.display.flip()
-        
+
 
 
 pygame.init()
@@ -56,6 +96,7 @@ def DrawQuitMenu(timeSinceLastMovement, score):
             if event.type == pygame.KEYDOWN:
                 if event.key == locals.K_y:
                     running = False
+                    RenderMainMenu()
                 elif event.key == locals.K_n:
                     running = False
                     GameLoop(timeSinceLastMovement, score)
