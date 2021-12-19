@@ -18,6 +18,19 @@ def RenderMainMenu():
         for event in pygame.event.get():
             if event.type == QUIT:
                 running = False
+            
+            if event.type == pygame.KEYDOWN:
+                if event.key == locals.K_q:
+                    running = False
+                if event.key == locals.K_p:
+                    running = False
+                    # Start GameLOOP !!!
+                if event.key == locals.K_l:
+                    running = False
+                    # Start Leaderboard
+                if event.key == locals.K_c:
+                    running = False
+                    # Start credits
     
         screen.fill(BLACK)
 

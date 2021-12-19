@@ -100,13 +100,12 @@ class GameField():
         y,x = self.snake.cells[-1]
         # check whether snake has collided with a wall
         if self.field[y][x] == 2:
-            print(1)
             return True
             
         # check whether snake has collided with itself
-        if self.field[y][x] == 1:
-            print(2)
-            return True
+        for i in range(self.snake.size - 1):
+            if self.snake.cells[-1] == self.snake.cells[i]:
+                return True
             
         
         
