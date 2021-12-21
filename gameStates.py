@@ -17,14 +17,18 @@ class MainMenu():
             if event.type == pygame.KEYDOWN:
                 if event.key == locals.K_q:
                     self.stateMachine.Quit()
+                    return
                 elif event.key == locals.K_p:
                     self.stateMachine.ChangeState("gameLoop")
+                    return
                     # Start GameLOOP !!!
                 elif event.key == locals.K_l:
                     self.stateMachine.ChangeState("leaderboard")
+                    return
                     # Start Leaderboard
                 elif event.key == locals.K_c:
                     self.stateMachine.ChangeState("credits")
+                    return
                     # Start credits
             
         self.screen.fill(BLACK)
@@ -78,32 +82,13 @@ class Credits():
         myfont.render_to(self.screen, rect, None, WHITE)
         pygame.display.flip()
 
-class LeaderBoard():
-    def __init__(self, screen, stateMachine):
-        self.screen = screen
-        self.stateMachine = stateMachine
-    
-    def Update(self):
-        for event in pygame.event.get():
-            if event.type == locals.QUIT:
-                self.stateMachine.Quit()
-            if event.type == pygame.KEYDOWN:
-                if event.key == locals.K_m:
-                    self.stateMachine.ChangeState("mainMenu")
-            
-        self.screen.fill(BLACK)
-        # game logo
-        rect = myfont.get_rect("LEADER BOARD")
-        rect.left = (screen_width - rect.width) / 2
-        rect.top = 10
-        myfont.render_to(self.screen, rect, None, WHITE)
-        pygame.display.flip()
 
 class Game():
     def __init__(self, screen, stateMachine):
         self.screen = screen
         self.stateMachine = stateMachine
         self.score = 0
+        self.minHighestScore = 0
         self.snake = Snake(3, (3,3))
         self.game = GameField(25,25, self.snake)
         self.game.DrawField()
@@ -112,6 +97,8 @@ class Game():
         self.MoveEveryMilliseconds = 200
         self.clock = pygame.time.Clock()
 
+    def Start(self):
+        self.minHighestScore = self.stateMachine.states["leaderboard"].GetMinScore()
 
     
     def Update(self):
@@ -144,6 +131,10 @@ class Game():
             self.game.snake.MoveOnYourOwn()
             self.timeSinceLastMovement = 0
             if self.game.IsSnakeCollided():
+
+                if self.score > self.minHighestScore:
+                    self.stateMachine.states["leaderboard"].AddNewScore("VIKA", self.score) 
+
                 self.stateMachine.ChangeState("gameOver")
 
         if self.game.DidSnakeGetFood():
