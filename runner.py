@@ -4,6 +4,7 @@ import pygame.freetype
 from gameStates import *
 from constants import *
 from score import *
+from gameover import *
 
 
 pygame.init()
@@ -16,8 +17,8 @@ class StateMachine():
                         "credits": Credits(screen, self),
                         "leaderboard": Score(screen, self),
                         "gameLoop": Game(screen, self),
-                        "gameOver": GameOver(screen, self)}
-        self.currentState = self.states["mainMenu"]
+                        "gameOver": GameOver(screen, self, 3)}
+        self.currentState = MainMenu(screen, self)
         self.running = True
 
     def Start(self):
@@ -29,9 +30,9 @@ class StateMachine():
     def Update(self):
         self.currentState.Update()
 
-    def ChangeState(self, state):
+    def ChangeState(self, State):
         self.ReloadStates()
-        self.currentState = self.states[state]
+        self.currentState = State
         self.Start()
         print("changing state")
 
@@ -43,7 +44,7 @@ class StateMachine():
                         "credits": Credits(screen, self),
                         "leaderboard": Score(screen, self),
                         "gameLoop": Game(screen, self),
-                        "gameOver": GameOver(screen, self)}
+                        "gameOver": GameOver(screen, self, 3)}
 
 stateMachine = StateMachine()
 

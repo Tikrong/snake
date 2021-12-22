@@ -1,3 +1,5 @@
+# !!! DEPRECATED!!!
+
 import pygame
 from pygame import locals
 import pygame.freetype
@@ -117,9 +119,9 @@ class Score():
         for event in pygame.event.get():
             if event.type == locals.QUIT:
                 self.stateMachine.Quit()
-            if event.type == pygame.KEYDOWN:
-                if event.key == locals.K_m:
-                    self.stateMachine.ChangeState("mainMenu")
+            #if event.type == pygame.KEYDOWN:
+                #if event.key == locals.K_m:
+                    #self.stateMachine.ChangeState(MainMenu(self.screen, self.stateMachine))
 
 
         
