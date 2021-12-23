@@ -53,13 +53,30 @@ class MainMenu():
 
         rectCredits = myfont.get_rect("(C)redits")
         rectCredits.left = (screen_width - rectCredits.width) / 2
-        rectCredits.top = rectLeaderboard.bottom + 10
+        rectCredits.top = rectLeaderboard.bottom + 13
         myfont.render_to(self.screen, rectCredits, None, WHITE)
 
         rectQuit = myfont.get_rect("(Q)uit")
         rectQuit.left = (screen_width - rectQuit.width) / 2
-        rectQuit.top = rectCredits.bottom + 10
+        rectQuit.top = rectCredits.bottom + 13
         myfont.render_to(self.screen, rectQuit, None, WHITE)
+
+        # render help 
+        rectHelp = myfontSmall.get_rect("Press 'P' to start the game")
+        rectHelp.left = (screen_width - rectHelp.width) / 2
+        rectHelp.bottom = screen_height - 5
+        myfontSmall.render_to(self.screen, rectHelp, None, WHITE)
+
+
+        # render logo
+        logo = pygame.image.load("snake_logo.png")
+        logo.convert_alpha()
+        logo = pygame.transform.scale(logo, (150,150))
+        rectLogo = pygame.Rect((screen_width-logo.get_width())/2, rectQuit.bottom + 50, 0,0)
+
+        self.screen.blit(logo, rectLogo)
+
+        
 
         pygame.display.flip()
 
@@ -96,11 +113,11 @@ class Game():
         self.game.DrawField()
         # we track how much time passed since last movements and if snake didn't moved we move it
         self.timeSinceLastMovement = 0
-        self.MoveEveryMilliseconds = 200
+        self.MoveEveryMilliseconds = 300
         self.clock = pygame.time.Clock()
 
     def Start(self):
-        self.minHighestScore = self.stateMachine.states["leaderboard"].GetMinScore()
+        pass
 
     
     def Update(self):
@@ -110,21 +127,19 @@ class Game():
                 self.stateMachine.Quit()
             if event.type == pygame.KEYDOWN:
                 if event.key == locals.K_LEFT:
-                    self.game.snake.MoveLeft()
-                    self.timeSinceLastMovement = 0
+                    if self.game.snake.MoveLeft():
+                        self.timeSinceLastMovement = 0
                 elif event.key == locals.K_RIGHT:
-                    self.game.snake.MoveRight()
-                    self.timeSinceLastMovement = 0
+                    if self.game.snake.MoveRight():
+                        self.timeSinceLastMovement = 0
                 elif event.key == locals.K_UP:
-                    self.game.snake.MoveUp()
-                    self.timeSinceLastMovement = 0
+                    if self.game.snake.MoveUp():
+                        self.timeSinceLastMovement = 0
                 elif event.key == locals.K_DOWN:
-                    self.game.snake.MoveDown()
-                    self.timeSinceLastMovement = 0
+                    if self.game.snake.MoveDown():
+                        self.timeSinceLastMovement = 0
                 if self.game.IsSnakeCollided():
                     self.stateMachine.ChangeState(GameOver(self.screen, self.stateMachine, self.score))
-                    #if self.score > self.minHighestScore:
-                        #self.stateMachine.states["leaderboard"].AddNewScore("VIKA", self.score)
                     return
                 if event.key == locals.K_q:
                     self.stateMachine.ChangeState(MainMenu(self.screen, self.stateMachine))
@@ -143,13 +158,14 @@ class Game():
             self.score += 1
 
         # draw gamefield grid, walls, snake
+        self.screen.fill(BLACK)
+
         for i in range(self.game.height):
             for j in range(self.game.width):
-                # if cell is empty draw square with white borders
+                # if cell is empty draw black square
                 rect = pygame.Rect(j*tile_size, i*tile_size + gameMenuHeight, tile_size, tile_size)
                 if self.game.field[i][j] == 0:
                     pygame.draw.rect(self.screen, BLACK, rect, 0)
-                    #pygame.draw.rect(screen, WHITE, rect, 1)
                 elif self.game.field[i][j] == 1:
                     pygame.draw.rect(self.screen, GREEN, rect, 0)
                 elif self.game.field[i][j] == 2:
@@ -168,10 +184,17 @@ class Game():
 
 
         self.game.DrawField()
+
+        #  Draw hint
+        rectHint = myfontSmall.get_rect("USE ARROW KEYS TO CONTROL THE SNAKE")
+        rectHint.left = (screen_width - rectHint.width) / 2
+        rectHint.bottom = screen_height - 15
+        myfontSmall.render_to(self.screen, rectHint, None, WHITE)
             
         
         pygame.display.flip()
         self.timeSinceLastMovement += self.clock.tick(60)
+        print(self.timeSinceLastMovement)
 
 class Score():
     def __init__(self, screen, stateMachine):
@@ -204,11 +227,11 @@ class Score():
         if len(self.scores) > self.maxNumOfRecords:
             self.scores.pop(-1)
         with open("scores.csv", "w", newline='') as file:
-                        fieldnames = ["PLACE", "NAME", "SCORE", "DATE"]
-                        writer = csv.DictWriter(file, fieldnames)
-                        writer.writeheader()
-                        for row in self.scores:
-                            writer.writerow(row)
+                fieldnames = ["PLACE", "NAME", "SCORE", "DATE"]
+                writer = csv.DictWriter(file, fieldnames)
+                writer.writeheader()
+                for row in self.scores:
+                    writer.writerow(row)
 
     def GetMinScore(self):
         # there are empty slots in table minimal score is 0
@@ -293,59 +316,94 @@ class GameOver():
     def __init__(self, screen, stateMachine, score):
         self.screen = screen
         self.stateMachine = stateMachine
-        self.cursor = 0
         self.name = []
         self.maxLenOfName = 8
         self.rectForName = pygame.Rect(0,0,0,0)
         self.score = score
+        self.minHighestScore = Score(self.screen, self.stateMachine).GetMinScore()
+        self.IsScoreGoingToLeaderboard = self.score > self.minHighestScore
+        if self.IsScoreGoingToLeaderboard:
+            self.updateFunction = self.GetUserName
+        else:
+            self.updateFunction = self.RenderGameOver
 
     def Start(self):
         # Draw borders
-        rectBorder = pygame.Rect(0,0, 200, 100)
+        rectBorder = pygame.Rect(0,0, 340, 150)
         rectBorder.left = (screen_width - rectBorder.width)/2
         rectBorder.top = (screen_height - rectBorder.height)/2
         pygame.draw.rect(self.screen, RED, rectBorder, width=3)
         
-
         # GameOver text
         rectGameOver = myfont.get_rect("GAME OVER")
         rectGameOver.left = (screen_width-rectGameOver.width) / 2
-        rectGameOver.top = rectBorder.top + 5
+        rectGameOver.top = rectBorder.top + 10
         myfont.render_to(self.screen, rectGameOver, None, WHITE)
 
-        # Place for name
-        rectName = myfont.get_rect("ASDFGHJQ")
-        print(rectName.width)
-        rectName.left = (screen_width-rectName.width) / 2
-        rectName.top = rectGameOver.top + 30
+        # Check whether user's score is enough to get him into the table
+        if self.IsScoreGoingToLeaderboard:
+            
+            # text
+            rectText = myfontSmall.get_rect("GOOD RESULT!")
+            rectText.left = (screen_width-rectText.width) / 2
+            rectText.top = rectGameOver.bottom + 30
+            myfontSmall.render_to(self.screen, rectText, None, WHITE)
 
-        rectUnderscore = myfont.get_rect("________")
-        rectUnderscore.left = rectName.left
-        rectUnderscore.top = rectName.bottom + 5
-        myfont.render_to(self.screen, rectUnderscore, None, WHITE)
-        
-        self.rectForName = rectName
+            rectText2 = myfontSmall.get_rect("Provide your name for the leaderboard")
+            rectText2.left = (screen_width-rectText2.width) / 2
+            rectText2.top = rectText.bottom + 5
+            myfontSmall.render_to(self.screen, rectText2, None, WHITE)
 
+            # Place for name
+            rectName = myfont.get_rect("ASDFGHJQ")
+            rectName.left = (screen_width-rectName.width) / 2
+            rectName.top = rectText2.bottom + 10
 
+            rectUnderscore = myfont.get_rect("________")
+            rectUnderscore.left = rectName.left
+            rectUnderscore.top = rectName.bottom + 5
+            myfont.render_to(self.screen, rectUnderscore, None, WHITE)
+            self.rectForName = rectName
 
-        #for n in range(self.maxLenOfName):
+            # Hint
+            rectHint = myfontSmall.get_rect("PRESS 'RETURN' TO SUBMIT")
+            rectHint.left = (screen_width - rectHint.width) / 2
+            rectHint.bottom = screen_height - 15
+            pygame.draw.rect(self.screen, BLACK, (0, rectHint.top, screen_width, rectHint.height))
+            myfontSmall.render_to(self.screen, rectHint, None, WHITE)
 
+        else:
+            # ordinary game over text
+            rectTryAgain = myfontSmall.get_rect("PRESS 'R' TO TRY AGAIN")
+            rectTryAgain.left = (screen_width-rectTryAgain.width) / 2
+            rectTryAgain.top = rectGameOver.bottom + 30
+            myfontSmall.render_to(self.screen, rectTryAgain, None, WHITE)
 
         pygame.display.flip()
 
     
     def Update(self):
+        self.updateFunction()
         
+
+    def RenderName(self):
+        pygame.draw.rect(self.screen, BLACK, self.rectForName)
+        rectName = myfont.get_rect("".join(self.name))
+        rectName.left = self.rectForName.left
+        rectName.top = self.rectForName.top
+        myfont.render_to(self.screen, rectName, None, WHITE)
+        pygame.display.flip()
+
+    def GetUserName(self):
         for event in pygame.event.get():
             if event.type == locals.QUIT:
                 self.stateMachine.Quit()
             if event.type == pygame.KEYDOWN:
                 #if event.key == locals.K_m:
                     #self.stateMachine.ChangeState("mainMenu")
-                if event.key == locals.K_BACKSPACE and self.cursor > 0:
-                    self.DeleteLetter(self.cursor)
-                    self.cursor -= 1
+                if event.key == locals.K_BACKSPACE and len(self.name) > 0:
                     self.name.pop(-1)
+                    self.RenderName()
                 
                 # when player press return and the name is typed add this name to the leaderboard
                 elif event.key == locals.K_RETURN and len(self.name) > 0:
@@ -357,24 +415,20 @@ class GameOver():
                 # the ability to type name
                 letter = event.unicode
                 if letter.isalpha() and len(self.name) < self.maxLenOfName:
-                    self.RenderLetter(letter.upper(), self.cursor)
                     self.name.append(letter.upper())
-                    self.cursor += 1
+                    self.RenderName()
+        
 
-    def RenderLetter(self, letter, cursor):
-        rectLetter = myfont.get_rect(letter)
-        rectLetter.left = self.rectForName.left + (rectLetter.width+2) * cursor
-        rectLetter.top = self.rectForName.top
-        pygame.draw.rect(self.screen, GREEN, rectLetter)
-        myfont.render_to(self.screen, rectLetter, None, WHITE)
-        pygame.display.flip()
+    def RenderGameOver(self):
+        for event in pygame.event.get():
+            if event.type == locals.QUIT:
+                self.stateMachine.Quit()
+            if event.type == pygame.KEYDOWN:
+                if event.key == locals.K_m:
+                    self.stateMachine.ChangeState(MainMenu(self.screen, self.stateMachine))
+                if event.key == locals.K_r:
+                    self.stateMachine.ChangeState(Game(self.screen, self.stateMachine))
 
-    def DeleteLetter(self, cursor):
-        rectLetter = myfont.get_rect(self.name[-1])
-        rectLetter.left = self.rectForName.left + (rectLetter.width+2) * (cursor - 1)
-        rectLetter.top = self.rectForName.top
-        pygame.draw.rect(self.screen, BLACK, rectLetter)
-        pygame.display.flip()
 
 
         

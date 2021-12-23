@@ -16,10 +16,13 @@ YELLOW = (255,255,0)
 
 # sizes
 tile_size = 20
-gameMenuHeight = 100
+gameMenuHeight = 40
 
 # fonts
 myfont = pygame.freetype.Font("clacon2.ttf", 32)
+myfont.antialiased = False
+myfontSmall = pygame.freetype.Font("clacon2.ttf", 16)
+myfontSmall.antialiased = False
 
 for i in range(3):
     print(i)

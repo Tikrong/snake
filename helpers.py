@@ -11,25 +11,41 @@ class Snake():
         self.cells = []
         for i in range(self.size):
             self.cells.append((initialPos[0], initialPos[1] - size + 1 + i))
-            print(self.cells)
 
     # Movement
+    # If player tries to move snake in oppisite direction (it goes left player presses right)
+    # snake wont move and the function returns False, that means no movement happend
     def MoveLeft(self):
-        self.cells.append((self.cells[self.size-1][0], self.cells[self.size-1][1] - 1))
+        cell = (self.cells[self.size-1][0], self.cells[self.size-1][1] - 1)
+        if self.IsSnakeMovesBackwards(cell):
+            return False
+        self.cells.append(cell)
         self.cells.pop(0)
-
+        return True
 
     def MoveRight(self):
-        self.cells.append((self.cells[self.size-1][0], self.cells[self.size-1][1] + 1))
+        cell = (self.cells[self.size-1][0], self.cells[self.size-1][1] + 1)
+        if self.IsSnakeMovesBackwards(cell):
+            return False
+        self.cells.append(cell)
         self.cells.pop(0)
+        return True
 
     def MoveUp(self):
-        self.cells.append((self.cells[self.size-1][0] - 1, self.cells[self.size-1][1]))
+        cell = (self.cells[self.size-1][0] - 1, self.cells[self.size-1][1])
+        if self.IsSnakeMovesBackwards(cell):
+            return False
+        self.cells.append(cell)
         self.cells.pop(0)
+        return True
 
     def MoveDown(self):
-        self.cells.append((self.cells[self.size-1][0] + 1, self.cells[self.size-1][1]))
+        cell = (self.cells[self.size-1][0] + 1, self.cells[self.size-1][1])
+        if self.IsSnakeMovesBackwards(cell):
+            return False
+        self.cells.append(cell)
         self.cells.pop(0)
+        return True
 
     # when player does nothing snake continue to move in the same direction it moved before
     # to calculate it we take head and neck as points and their coordinates as vectors.
@@ -46,6 +62,9 @@ class Snake():
     def Grow(self):
         self.cells.insert(0, (self.cells[0]))    
         self.size += 1
+
+    def IsSnakeMovesBackwards(self, cell):
+        return self.cells[-2] == cell
 
 
 
