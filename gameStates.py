@@ -43,7 +43,7 @@ class MainMenu():
         # render menu options
         rectPlay = myfont.get_rect("(P)lay")
         rectPlay.left = (screen_width - rectPlay.width) / 2
-        rectPlay.top = 200
+        rectPlay.top = 130
         myfont.render_to(self.screen, rectPlay, None, WHITE)
 
         rectLeaderboard = myfont.get_rect("(L)eaderboard")
@@ -53,15 +53,15 @@ class MainMenu():
 
         rectCredits = myfont.get_rect("(C)redits")
         rectCredits.left = (screen_width - rectCredits.width) / 2
-        rectCredits.top = rectLeaderboard.bottom + 13
+        rectCredits.top = rectLeaderboard.bottom + 15
         myfont.render_to(self.screen, rectCredits, None, WHITE)
 
         rectQuit = myfont.get_rect("(Q)uit")
         rectQuit.left = (screen_width - rectQuit.width) / 2
-        rectQuit.top = rectCredits.bottom + 13
+        rectQuit.top = rectCredits.bottom + 15
         myfont.render_to(self.screen, rectQuit, None, WHITE)
 
-        # render help 
+        # render hint 
         rectHelp = myfontSmall.get_rect("Press 'P' to start the game")
         rectHelp.left = (screen_width - rectHelp.width) / 2
         rectHelp.bottom = screen_height - 5
@@ -72,7 +72,7 @@ class MainMenu():
         logo = pygame.image.load("snake_logo.png")
         logo.convert_alpha()
         logo = pygame.transform.scale(logo, (150,150))
-        rectLogo = pygame.Rect((screen_width-logo.get_width())/2, rectQuit.bottom + 50, 0,0)
+        rectLogo = pygame.Rect((screen_width-logo.get_width())/2, rectQuit.bottom + 100, 0,0)
 
         self.screen.blit(logo, rectLogo)
 
@@ -188,7 +188,7 @@ class Game():
         #  Draw hint
         rectHint = myfontSmall.get_rect("USE ARROW KEYS TO CONTROL THE SNAKE")
         rectHint.left = (screen_width - rectHint.width) / 2
-        rectHint.bottom = screen_height - 15
+        rectHint.bottom = screen_height - 23
         myfontSmall.render_to(self.screen, rectHint, None, WHITE)
             
         
@@ -198,15 +198,52 @@ class Game():
 
 class Score():
     def __init__(self, screen, stateMachine):
+        self.maxNumOfRecords = 10
+        try:
+            self.scores = self.OpenScoreTable(self.maxNumOfRecords)
+        except FileNotFoundError:
+            self.RebuildScoresTable()
+            self.scores = self.OpenScoreTable(self.maxNumOfRecords)
+        self.screen = screen
+        self.stateMachine = stateMachine
+
+    def OpenScoreTable(self, maxNumOfRecords):
         with open("scores.csv", "r", newline='') as file:
             scoresreader = csv.DictReader(file)
-            self.scores = []
+            scores = []
             for row in scoresreader:
-                self.scores.append(row)
-            self.maxNumOfRecords = 10
-            self.screen = screen
-            self.stateMachine = stateMachine
+                scores.append(row)
+            # make sure that there are only 10 rows showing in score table
+            scores = scores[:maxNumOfRecords]
+            
+            #  check that the score file isn't corrupt
+            #  check that headers are correct
+            correctHeaders = ['PLACE', 'NAME', 'SCORE', 'DATE']
+            for header, headerBackup in zip(scoresreader.fieldnames, correctHeaders):
+                if header != headerBackup:
+                    self.RebuildScoresTable()
+                    scores = self.OpenScoreTable(maxNumOfRecords)
+                    break
+            
+            # check that scores  contain ingegers
+            for row in scores:
+                try:
+                    int(row["SCORE"])
+                except ValueError:
+                    self.RebuildScoresTable()
+                    scores = self.OpenScoreTable(maxNumOfRecords)
+                    break
 
+            return scores
+
+    def RebuildScoresTable(self):
+        with open("scores.csv", "w", newline='') as file:
+            fieldnames = ["PLACE", "NAME", "SCORE", "DATE"]
+            writer = csv.DictWriter(file, fieldnames)
+            writer.writeheader()
+            row = {"PLACE": 1, "NAME": "PYTHON", "SCORE": "1000", 
+                            "DATE": "23-12-21"}
+            writer.writerow(row)
 
 
     def AddNewScore(self, name, score):
@@ -223,6 +260,9 @@ class Score():
                             "DATE": datetime.date.today().strftime("%d-%m-%y")}
                 self.scores.insert(x, newRecord)
                 break
+        
+        # make sure that there are only 10 records in the table
+        self.scores = self.scores[:self.maxNumOfRecords]
 
         if len(self.scores) > self.maxNumOfRecords:
             self.scores.pop(-1)
@@ -252,51 +292,48 @@ class Score():
         # Render Headers
         # place
         rectPlace = pygame.Rect(20, 50, 20, 20)
-        pygame.draw.rect(self.screen, RED, rectPlace)
         myfont.render_to(self.screen, rectPlace, "№", WHITE)
 
         # name
         rectName = pygame.Rect(rectPlace.right + 15, 50, 140, 20)
-        pygame.draw.rect(self.screen, RED, rectName)
         myfont.render_to(self.screen, rectName, "NAME", WHITE)
         
         # date
         rectDate = pygame.Rect(0, 50, 120, 20)
         rectDate.right = screen_width - 20
-        pygame.draw.rect(self.screen, RED, rectDate)
         myfont.render_to(self.screen, rectDate, "DATE", WHITE)
         
         # score
         rectScore = pygame.Rect(0, 50, 100, 20)
         rectScore.right = rectDate.left - 20
-        pygame.draw.rect(self.screen, RED, rectScore)
         myfont.render_to(self.screen, rectScore, "SCORE", WHITE)
 
         pygame.draw.line(self.screen, WHITE, (20,rectScore.bottom+10), (screen_width-20, rectScore.bottom+10), 2)
-            
+
+        # render hint 
+        rectHelp = myfontSmall.get_rect("Press 'M' to go to the Main Menu")
+        rectHelp.left = (screen_width - rectHelp.width) / 2
+        rectHelp.bottom = screen_height - 5
+        myfontSmall.render_to(self.screen, rectHelp, None, WHITE)    
 
         # Render Contents
         for n in range(len(self.scores)):
             # place
             rectPlace = pygame.Rect(20, n*42+100, 20, 20)
-            pygame.draw.rect(self.screen, RED, rectPlace)
             myfont.render_to(self.screen, rectPlace, str(n+1), WHITE)
 
             # name
             rectName = pygame.Rect(rectPlace.right + 15, n*42+100, 140, 20)
-            pygame.draw.rect(self.screen, RED, rectName)
             myfont.render_to(self.screen, rectName, self.scores[n]["NAME"], WHITE)
             
             # date
             rectDate = pygame.Rect(0, n*42+100, 120, 20)
             rectDate.right = screen_width - 20
-            pygame.draw.rect(self.screen, RED, rectDate)
             myfont.render_to(self.screen, rectDate, self.scores[n]["DATE"], WHITE)
             
             # score
             rectScore = pygame.Rect(0, n*42+100, 100, 20)
             rectScore.right = rectDate.left - 20
-            pygame.draw.rect(self.screen, RED, rectScore)
             myfont.render_to(self.screen, rectScore, self.scores[n]["SCORE"], WHITE)
 
             pygame.draw.line(self.screen, WHITE, (20,rectScore.bottom+10), (screen_width-20, rectScore.bottom+10), 2)
@@ -328,25 +365,35 @@ class GameOver():
             self.updateFunction = self.RenderGameOver
 
     def Start(self):
-        # Draw borders
-        rectBorder = pygame.Rect(0,0, 340, 150)
-        rectBorder.left = (screen_width - rectBorder.width)/2
-        rectBorder.top = (screen_height - rectBorder.height)/2
-        pygame.draw.rect(self.screen, RED, rectBorder, width=3)
         
-        # GameOver text
-        rectGameOver = myfont.get_rect("GAME OVER")
-        rectGameOver.left = (screen_width-rectGameOver.width) / 2
-        rectGameOver.top = rectBorder.top + 10
-        myfont.render_to(self.screen, rectGameOver, None, WHITE)
 
         # Check whether user's score is enough to get him into the table
         if self.IsScoreGoingToLeaderboard:
+            # Draw borders
+            rectBorder = pygame.Rect(0,0, 340, 200)
+            rectBorder.left = (screen_width - rectBorder.width)/2
+            rectBorder.top = (screen_height - rectBorder.height)/2
+            pygame.draw.rect(self.screen, RED, rectBorder, width=3)
             
+            # GameOver text
+            rectGameOver = myfont.get_rect("GAME OVER")
+            rectGameOver.left = (screen_width-rectGameOver.width) / 2
+            rectGameOver.top = rectBorder.top + 10
+            myfont.render_to(self.screen, rectGameOver, None, WHITE)
+
+            # Render Victory sign
+            # render skull
+            cup = pygame.image.load("cup_fz.png")
+            cup.convert_alpha()
+            cup = pygame.transform.scale(cup, (60,60))
+            rectCup = pygame.Rect((screen_width-cup.get_width())/2, rectGameOver.bottom + 10, cup.get_width(), cup.get_height())
+
+            self.screen.blit(cup, rectCup)
+
             # text
-            rectText = myfontSmall.get_rect("GOOD RESULT!")
+            rectText = myfontSmall.get_rect("CONGRATULATIONS!")
             rectText.left = (screen_width-rectText.width) / 2
-            rectText.top = rectGameOver.bottom + 30
+            rectText.top = rectCup.bottom + 20
             myfontSmall.render_to(self.screen, rectText, None, WHITE)
 
             rectText2 = myfontSmall.get_rect("Provide your name for the leaderboard")
@@ -368,16 +415,42 @@ class GameOver():
             # Hint
             rectHint = myfontSmall.get_rect("PRESS 'RETURN' TO SUBMIT")
             rectHint.left = (screen_width - rectHint.width) / 2
-            rectHint.bottom = screen_height - 15
+            rectHint.bottom = screen_height - 23
             pygame.draw.rect(self.screen, BLACK, (0, rectHint.top, screen_width, rectHint.height))
             myfontSmall.render_to(self.screen, rectHint, None, WHITE)
 
         else:
+            # Draw borders
+            rectBorder = pygame.Rect(0,0, 340, 150)
+            rectBorder.left = (screen_width - rectBorder.width)/2
+            rectBorder.top = (screen_height - rectBorder.height)/2
+            pygame.draw.rect(self.screen, RED, rectBorder, width=3)
+            
+            # GameOver text
+            rectGameOver = myfont.get_rect("GAME OVER")
+            rectGameOver.left = (screen_width-rectGameOver.width) / 2
+            rectGameOver.top = rectBorder.top + 10
+            myfont.render_to(self.screen, rectGameOver, None, WHITE)
+            
+            # render skull
+            skull = pygame.image.load("skull_fz.png")
+            skull.convert_alpha()
+            skull = pygame.transform.scale(skull, (60,50))
+            rectSkull = pygame.Rect((screen_width-skull.get_width())/2, rectGameOver.bottom + 10, skull.get_width(), skull.get_height())
+
+            self.screen.blit(skull, rectSkull)
+            
             # ordinary game over text
             rectTryAgain = myfontSmall.get_rect("PRESS 'R' TO TRY AGAIN")
             rectTryAgain.left = (screen_width-rectTryAgain.width) / 2
-            rectTryAgain.top = rectGameOver.bottom + 30
+            rectTryAgain.top = rectSkull.bottom + 15
             myfontSmall.render_to(self.screen, rectTryAgain, None, WHITE)
+
+            rectQuitToMenu = myfontSmall.get_rect("PRESS 'Q' TO QUIT")
+            rectQuitToMenu.left = (screen_width-rectQuitToMenu.width) / 2
+            rectQuitToMenu.top = rectTryAgain.bottom + 10
+            myfontSmall.render_to(self.screen, rectQuitToMenu, None, WHITE)
+
 
         pygame.display.flip()
 
@@ -399,8 +472,6 @@ class GameOver():
             if event.type == locals.QUIT:
                 self.stateMachine.Quit()
             if event.type == pygame.KEYDOWN:
-                #if event.key == locals.K_m:
-                    #self.stateMachine.ChangeState("mainMenu")
                 if event.key == locals.K_BACKSPACE and len(self.name) > 0:
                     self.name.pop(-1)
                     self.RenderName()
@@ -424,7 +495,7 @@ class GameOver():
             if event.type == locals.QUIT:
                 self.stateMachine.Quit()
             if event.type == pygame.KEYDOWN:
-                if event.key == locals.K_m:
+                if event.key == locals.K_q:
                     self.stateMachine.ChangeState(MainMenu(self.screen, self.stateMachine))
                 if event.key == locals.K_r:
                     self.stateMachine.ChangeState(Game(self.screen, self.stateMachine))

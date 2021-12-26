@@ -13,11 +13,6 @@ screen = pygame.display.set_mode((screen_width, screen_height))
 
 class StateMachine():
     def __init__(self):
-        self.states = {"mainMenu": MainMenu(screen, self),
-                        "credits": Credits(screen, self),
-                        "leaderboard": Score(screen, self),
-                        "gameLoop": Game(screen, self),
-                        "gameOver": GameOver(screen, self, 3)}
         self.currentState = MainMenu(screen, self)
         self.running = True
 
