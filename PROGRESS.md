@@ -19,7 +19,6 @@ Credits
 Leaderboard
 
 Other
-- change colors for some old-school pallete
 - add sounds
 - add obstacles
 - remove everything you can from update function

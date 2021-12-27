@@ -110,7 +110,41 @@ class Credits():
         rectHelp.bottom = screen_height - 5
         myfontSmall.render_to(self.screen, rectHelp, None, WHITE)
 
+        # render text
+        text = ["THIS GAME WAS CREATED TO PRACTICE PYTHON",
+                "IT IS AVAILABALE FOR DOWNLOAD AT MY GITHUB",
+                "github.com/Tikrong/snake",
+                "USED RESOURCES:",
+                "SNAKE IMAGE - pixelartmaker.com/art/12b7d2d3028378e",
+                "SKULL IMAGE - pixilart.com/art/just-a-skull-and-bones-afd73ef8e6a0ecd"]
+        
+        i = 0
+        for line in text:
+            rect = myfontSmall.get_rect(line.upper())
+            rect.left = 20
+            rect.top = (rect.height+10)*i + 50
+            pygame.draw.rect(self.screen, RED, rect)
+            myfontSmall.render_to(self.screen, rect, None, WHITE)
+            i += 1
+
+
+        #self.RenderText()
+
         pygame.display.flip()
+
+    def RenderText(self):
+        text = "SOME TEXT AND INFO"
+        tmp = ""
+        for i in range(len(text)):
+            tmp += text[i]
+            rect = myfont.get_rect(tmp)
+            rect.left = 20
+            rect.top = 100
+            myfont.render_to(self.screen, rect, None, WHITE)
+            pygame.display.flip()
+            time.sleep(0.1)
+                
+
 
 
 class Game():
