@@ -5,6 +5,7 @@ from constants import *
 from helpers import *
 import csv
 import datetime
+import time
 
 
 class MainMenu():
@@ -55,7 +56,7 @@ class MainMenu():
         rectCredits.left = (screen_width - rectCredits.width) / 2
         rectCredits.top = rectLeaderboard.bottom + 15
         myfont.render_to(self.screen, rectCredits, None, WHITE)
-
+        
         rectQuit = myfont.get_rect("(Q)uit")
         rectQuit.left = (screen_width - rectQuit.width) / 2
         rectQuit.top = rectCredits.bottom + 15
@@ -69,12 +70,14 @@ class MainMenu():
 
 
         # render logo
-        logo = pygame.image.load("snake_logo.png")
-        logo.convert_alpha()
-        logo = pygame.transform.scale(logo, (150,150))
-        rectLogo = pygame.Rect((screen_width-logo.get_width())/2, rectQuit.bottom + 100, 0,0)
-
-        self.screen.blit(logo, rectLogo)
+        try:
+            logo = pygame.image.load("snake_logo.png")
+            logo.convert_alpha()
+            logo = pygame.transform.scale(logo, (150,150))
+            rectLogo = pygame.Rect((screen_width-logo.get_width())/2, rectQuit.bottom + 100, 0,0)
+            self.screen.blit(logo, rectLogo)
+        except FileNotFoundError:
+            print("Snake logo isn't found")
 
         
 
@@ -99,6 +102,14 @@ class Credits():
         rect.left = (screen_width - rect.width) / 2
         rect.top = 10
         myfont.render_to(self.screen, rect, None, WHITE)
+        pygame.draw.line(self.screen,  WHITE, (rect.left, rect.bottom+5), (rect.right, rect.bottom+5), 2)
+
+        # render hint 
+        rectHelp = myfontSmall.get_rect("Press 'M' to go to the Main Menu")
+        rectHelp.left = (screen_width - rectHelp.width) / 2
+        rectHelp.bottom = screen_height - 5
+        myfontSmall.render_to(self.screen, rectHelp, None, WHITE)
+
         pygame.display.flip()
 
 
@@ -118,6 +129,31 @@ class Game():
 
     def Start(self):
         pass
+
+    def IncreaseDifficulty(self):
+        # 15 point
+        if self.MoveEveryMilliseconds > 200:
+            self.MoveEveryMilliseconds -= 20
+        # 45 points
+        elif self.MoveEveryMilliseconds > 100:
+            self.MoveEveryMilliseconds -= 10
+        # 75 points
+        elif self.MoveEveryMilliseconds > 50:
+            self.MoveEveryMilliseconds -= 5
+        # 102 points
+        elif self.MoveEveryMilliseconds > 25:
+            self.MoveEveryMilliseconds - 3
+    
+    # this function draws the collision of the snake
+    def DrawCollision(self):
+        # we paint the neck of the snake because the head is already on the obstacle, but we didn't render it yet
+        # because we move the snake, then check for collisions and onlyt then render
+        y, x = self.snake.cells[-2]
+        rect = pygame.Rect(x*tile_size, y*tile_size + gameMenuHeight, tile_size, tile_size)
+        pygame.draw.rect(self.screen, ORANGE, rect, 0)
+        pygame.display.flip()
+        time.sleep(1)
+        return
 
     
     def Update(self):
@@ -139,11 +175,24 @@ class Game():
                     if self.game.snake.MoveDown():
                         self.timeSinceLastMovement = 0
                 if self.game.IsSnakeCollided():
+                    self.DrawCollision()
                     self.stateMachine.ChangeState(GameOver(self.screen, self.stateMachine, self.score))
                     return
                 if event.key == locals.K_q:
-                    self.stateMachine.ChangeState(MainMenu(self.screen, self.stateMachine))
-                    #DrawQuitMenu(timeSinceLastMovement, score)
+                    # when player quits and has enough points for leaderboard position we put him there
+                    minHighestScore = Score(self.screen, self.stateMachine).GetMinScore()
+                    if self.score > minHighestScore:
+                        self.stateMachine.ChangeState(GameOver(self.screen, self.stateMachine, self.score))
+                        return
+                    else:
+                        self.stateMachine.ChangeState(MainMenu(self.screen, self.stateMachine))
+                        return
+
+                if self.game.DidSnakeGetFood():
+                    self.score += 1
+                    # increase difficulty every 3 points
+                    if self.score % 3 == 0:
+                        self.IncreaseDifficulty()
                 
 
         # if player do nothing snake moves on its own
@@ -151,11 +200,16 @@ class Game():
             self.game.snake.MoveOnYourOwn()
             self.timeSinceLastMovement = 0
             if self.game.IsSnakeCollided():
+                self.DrawCollision()
                 self.stateMachine.ChangeState(GameOver(self.screen, self.stateMachine, self.score))
                 return
+            if self.game.DidSnakeGetFood():
+                self.score += 1
+                # increase difficulty every 3 points
+                if self.score % 3 == 0:    
+                    self.IncreaseDifficulty()
 
-        if self.game.DidSnakeGetFood():
-            self.score += 1
+        
 
         # draw gamefield grid, walls, snake
         self.screen.fill(BLACK)
@@ -194,7 +248,6 @@ class Game():
         
         pygame.display.flip()
         self.timeSinceLastMovement += self.clock.tick(60)
-        print(self.timeSinceLastMovement)
 
 class Score():
     def __init__(self, screen, stateMachine):
@@ -241,7 +294,7 @@ class Score():
             fieldnames = ["PLACE", "NAME", "SCORE", "DATE"]
             writer = csv.DictWriter(file, fieldnames)
             writer.writeheader()
-            row = {"PLACE": 1, "NAME": "PYTHON", "SCORE": "1000", 
+            row = {"PLACE": 1, "NAME": "PYTHON", "SCORE": "100", 
                             "DATE": "23-12-21"}
             writer.writerow(row)
 
@@ -287,24 +340,26 @@ class Score():
         rect.left = (screen_width - rect.width) / 2
         rect.top = 10
         myfont.render_to(self.screen, rect, None, WHITE)
+        pygame.draw.line(self.screen, WHITE, (rect.left, rect.bottom+5), (rect.right, rect.bottom+5), 2)
+
 
         # Render Score table
         # Render Headers
         # place
-        rectPlace = pygame.Rect(20, 50, 20, 20)
+        rectPlace = pygame.Rect(20, 70, 20, 20)
         myfont.render_to(self.screen, rectPlace, "№", WHITE)
 
         # name
-        rectName = pygame.Rect(rectPlace.right + 15, 50, 140, 20)
+        rectName = pygame.Rect(rectPlace.right + 15, 70, 140, 20)
         myfont.render_to(self.screen, rectName, "NAME", WHITE)
         
         # date
-        rectDate = pygame.Rect(0, 50, 120, 20)
+        rectDate = pygame.Rect(0, 70, 120, 20)
         rectDate.right = screen_width - 20
         myfont.render_to(self.screen, rectDate, "DATE", WHITE)
         
         # score
-        rectScore = pygame.Rect(0, 50, 100, 20)
+        rectScore = pygame.Rect(0, 70, 100, 20)
         rectScore.right = rectDate.left - 20
         myfont.render_to(self.screen, rectScore, "SCORE", WHITE)
 
@@ -319,20 +374,20 @@ class Score():
         # Render Contents
         for n in range(len(self.scores)):
             # place
-            rectPlace = pygame.Rect(20, n*42+100, 20, 20)
+            rectPlace = pygame.Rect(20, n*42+120, 20, 20)
             myfont.render_to(self.screen, rectPlace, str(n+1), WHITE)
 
             # name
-            rectName = pygame.Rect(rectPlace.right + 15, n*42+100, 140, 20)
+            rectName = pygame.Rect(rectPlace.right + 15, n*42+120, 140, 20)
             myfont.render_to(self.screen, rectName, self.scores[n]["NAME"], WHITE)
             
             # date
-            rectDate = pygame.Rect(0, n*42+100, 120, 20)
+            rectDate = pygame.Rect(0, n*42+120, 120, 20)
             rectDate.right = screen_width - 20
             myfont.render_to(self.screen, rectDate, self.scores[n]["DATE"], WHITE)
             
             # score
-            rectScore = pygame.Rect(0, n*42+100, 100, 20)
+            rectScore = pygame.Rect(0, n*42+120, 100, 20)
             rectScore.right = rectDate.left - 20
             myfont.render_to(self.screen, rectScore, self.scores[n]["SCORE"], WHITE)
 
@@ -373,6 +428,7 @@ class GameOver():
             rectBorder = pygame.Rect(0,0, 340, 200)
             rectBorder.left = (screen_width - rectBorder.width)/2
             rectBorder.top = (screen_height - rectBorder.height)/2
+            pygame.draw.rect(self.screen, BLACK, rectBorder)
             pygame.draw.rect(self.screen, RED, rectBorder, width=3)
             
             # GameOver text
@@ -383,12 +439,16 @@ class GameOver():
 
             # Render Victory sign
             # render skull
-            cup = pygame.image.load("cup_fz.png")
-            cup.convert_alpha()
-            cup = pygame.transform.scale(cup, (60,60))
-            rectCup = pygame.Rect((screen_width-cup.get_width())/2, rectGameOver.bottom + 10, cup.get_width(), cup.get_height())
+            try:
+                cup = pygame.image.load("cup_fz.png")
+                cup.convert_alpha()
+                cup = pygame.transform.scale(cup, (60,60))
+                rectCup = pygame.Rect((screen_width-cup.get_width())/2, rectGameOver.bottom + 10, cup.get_width(), cup.get_height())
 
-            self.screen.blit(cup, rectCup)
+                self.screen.blit(cup, rectCup)
+            except FileNotFoundError:
+                rectCup = pygame.Rect((screen_width-60)/2, rectGameOver.bottom + 10, 60, 60)
+                print("Cup img isn't found")
 
             # text
             rectText = myfontSmall.get_rect("CONGRATULATIONS!")
@@ -424,6 +484,7 @@ class GameOver():
             rectBorder = pygame.Rect(0,0, 340, 150)
             rectBorder.left = (screen_width - rectBorder.width)/2
             rectBorder.top = (screen_height - rectBorder.height)/2
+            pygame.draw.rect(self.screen, RED, rectBorder)
             pygame.draw.rect(self.screen, RED, rectBorder, width=3)
             
             # GameOver text
@@ -433,12 +494,15 @@ class GameOver():
             myfont.render_to(self.screen, rectGameOver, None, WHITE)
             
             # render skull
-            skull = pygame.image.load("skull_fz.png")
-            skull.convert_alpha()
-            skull = pygame.transform.scale(skull, (60,50))
-            rectSkull = pygame.Rect((screen_width-skull.get_width())/2, rectGameOver.bottom + 10, skull.get_width(), skull.get_height())
-
-            self.screen.blit(skull, rectSkull)
+            try:
+                skull = pygame.image.load("skull_fz.png")
+                skull.convert_alpha()
+                skull = pygame.transform.scale(skull, (60,50))
+                rectSkull = pygame.Rect((screen_width-skull.get_width())/2, rectGameOver.bottom + 10, skull.get_width(), skull.get_height())
+                self.screen.blit(skull, rectSkull)
+            except FileNotFoundError:
+                rectSkull = pygame.Rect((screen_width-60)/2, rectGameOver.bottom + 10, 60, 50)
+                print("Skull img isn't found")
             
             # ordinary game over text
             rectTryAgain = myfontSmall.get_rect("PRESS 'R' TO TRY AGAIN")

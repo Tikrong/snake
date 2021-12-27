@@ -10,9 +10,10 @@ screen_width = 500
 # colors
 WHITE = (255,255,255)
 BLACK = (0,0,0)
-GREEN = (0,255,0)
-RED = (255,0,0)
+GREEN = (0,125,0)
+RED = (125,0,0)
 YELLOW = (255,255,0)
+ORANGE = (180,100,0)
 
 # sizes
 tile_size = 20
