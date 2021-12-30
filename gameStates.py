@@ -27,6 +27,7 @@ class MainMenu():
                     # Start GameLOOP !!!
                 elif event.key == locals.K_l:
                     self.stateMachine.ChangeState(Score(self.screen, self.stateMachine))
+                    menuChoiceSound.play()
                     return
                     # Start Leaderboard
                 elif event.key == locals.K_c:
@@ -87,6 +88,7 @@ class Credits():
     def __init__(self, screen, stateMachine):
         self.screen = screen
         self.stateMachine = stateMachine
+        menuChoiceSound.play()
 
     def Update(self):
         for event in pygame.event.get():
@@ -95,6 +97,7 @@ class Credits():
             if event.type == pygame.KEYDOWN:
                 if event.key == locals.K_m:
                     self.stateMachine.ChangeState(MainMenu(self.screen, self.stateMachine))
+                    mainMenuSound.play()
             
         self.screen.fill(BLACK)
         # game logo
@@ -111,21 +114,33 @@ class Credits():
         myfontSmall.render_to(self.screen, rectHelp, None, WHITE)
 
         # render text
-        text = ["THIS GAME WAS CREATED TO PRACTICE PYTHON",
-                "IT IS AVAILABALE FOR DOWNLOAD AT MY GITHUB",
+        text = ["THIS GAME WAS CREATED TO PRACTICE PYTHON AND JUST FOR FUN",
+                "IT IS AVAILABALE FOR DOWNLOAD AT MY GITHUB:",
                 "github.com/Tikrong/snake",
+                "line",
                 "USED RESOURCES:",
-                "SNAKE IMAGE - pixelartmaker.com/art/12b7d2d3028378e",
-                "SKULL IMAGE - pixilart.com/art/just-a-skull-and-bones-afd73ef8e6a0ecd"]
+                "* SNAKE IMAGE *",
+                "pixelartmaker.com/art/12b7d2d3028378e",
+                "* SKULL IMAGE *", 
+                "pixilart.com/art/just-a-skull-and-bones-afd73ef8e6a0ecd",
+                "* SOUNDS *",
+                "opengameart.org"]
         
         i = 0
         for line in text:
-            rect = myfontSmall.get_rect(line.upper())
-            rect.left = 20
-            rect.top = (rect.height+10)*i + 50
-            pygame.draw.rect(self.screen, RED, rect)
-            myfontSmall.render_to(self.screen, rect, None, WHITE)
-            i += 1
+            # draw line
+            if line == "line":
+                rect = myfontSmall.get_rect("ABC")
+                rect.left = 20
+                rect.top = (rect.height+10)*i + 50
+                pygame.draw.line(self.screen, WHITE, (rect.left, rect.top + rect.height/2), (rect.left+100, rect.top + rect.height/2))
+                i += 1
+            else:
+                rect = myfontSmall.get_rect(line.upper())
+                rect.left = 20
+                rect.top = (rect.height+10)*i + 50
+                myfontSmall.render_to(self.screen, rect, None, WHITE)
+                i += 1
 
 
         #self.RenderText()
@@ -170,13 +185,14 @@ class Game():
             self.MoveEveryMilliseconds -= 20
         # 45 points
         elif self.MoveEveryMilliseconds > 100:
-            self.MoveEveryMilliseconds -= 10
+            self.MoveEveryMilliseconds -= 7
         # 75 points
         elif self.MoveEveryMilliseconds > 50:
-            self.MoveEveryMilliseconds -= 5
+            self.MoveEveryMilliseconds -= 4
         # 102 points
         elif self.MoveEveryMilliseconds > 25:
-            self.MoveEveryMilliseconds - 3
+            self.MoveEveryMilliseconds - 2
+        print(self.MoveEveryMilliseconds)
     
     # this function draws the collision of the snake
     def DrawCollision(self):
@@ -199,16 +215,21 @@ class Game():
                 if event.key == locals.K_LEFT:
                     if self.game.snake.MoveLeft():
                         self.timeSinceLastMovement = 0
+                        movementSound.play()
                 elif event.key == locals.K_RIGHT:
                     if self.game.snake.MoveRight():
                         self.timeSinceLastMovement = 0
+                        movementSound.play()
                 elif event.key == locals.K_UP:
                     if self.game.snake.MoveUp():
                         self.timeSinceLastMovement = 0
+                        movementSound.play()
                 elif event.key == locals.K_DOWN:
                     if self.game.snake.MoveDown():
                         self.timeSinceLastMovement = 0
+                        movementSound.play()
                 if self.game.IsSnakeCollided():
+                    collisionSound.play()
                     self.DrawCollision()
                     self.stateMachine.ChangeState(GameOver(self.screen, self.stateMachine, self.score))
                     return
@@ -220,31 +241,46 @@ class Game():
                         return
                     else:
                         self.stateMachine.ChangeState(MainMenu(self.screen, self.stateMachine))
+                        mainMenuSound.play()
                         return
 
                 if self.game.DidSnakeGetFood():
                     self.score += 1
+                    gotFoodSound.play()
                     # increase difficulty every 3 points
                     if self.score % 3 == 0:
                         self.IncreaseDifficulty()
+
+                self.DrawGameField()
                 
 
         # if player do nothing snake moves on its own
         if self.timeSinceLastMovement > self.MoveEveryMilliseconds:
             self.game.snake.MoveOnYourOwn()
+            
             self.timeSinceLastMovement = 0
             if self.game.IsSnakeCollided():
+                collisionSound.play()
                 self.DrawCollision()
                 self.stateMachine.ChangeState(GameOver(self.screen, self.stateMachine, self.score))
                 return
             if self.game.DidSnakeGetFood():
                 self.score += 1
+                gotFoodSound.play()
                 # increase difficulty every 3 points
                 if self.score % 3 == 0:    
                     self.IncreaseDifficulty()
 
-        
+            movementSound.play()
+            self.DrawGameField()
 
+        self.timeSinceLastMovement += self.clock.tick(60)
+
+    def Start(self):
+        self.DrawGameField()
+
+    def DrawGameField(self):
+        self.game.DrawField()
         # draw gamefield grid, walls, snake
         self.screen.fill(BLACK)
 
@@ -261,7 +297,6 @@ class Game():
                 elif self.game.field[i][j] == 3:
                     pygame.draw.rect(self.screen, YELLOW, rect, 0)
 
-        
         # Draw GameMenu
         scoreRect = pygame.Rect(10, 10, 80, 0)
         myfont.render_to(self.screen, scoreRect, "SCORE", WHITE)
@@ -270,8 +305,7 @@ class Game():
         quitRect = pygame.Rect(screen_width - 100, 10, 80, 0)
         myfont.render_to(self.screen, quitRect, "(Q)uit", WHITE)
 
-
-        self.game.DrawField()
+        
 
         #  Draw hint
         rectHint = myfontSmall.get_rect("USE ARROW KEYS TO CONTROL THE SNAKE")
@@ -279,9 +313,8 @@ class Game():
         rectHint.bottom = screen_height - 23
         myfontSmall.render_to(self.screen, rectHint, None, WHITE)
             
-        
         pygame.display.flip()
-        self.timeSinceLastMovement += self.clock.tick(60)
+
 
 class Score():
     def __init__(self, screen, stateMachine):
@@ -436,6 +469,7 @@ class Score():
             if event.type == pygame.KEYDOWN:
                 if event.key == locals.K_m:
                     self.stateMachine.ChangeState(MainMenu(self.screen, self.stateMachine))
+                    mainMenuSound.play()
 
 
 class GameOver():
@@ -458,6 +492,7 @@ class GameOver():
 
         # Check whether user's score is enough to get him into the table
         if self.IsScoreGoingToLeaderboard:
+            victorySound.play()
             # Draw borders
             rectBorder = pygame.Rect(0,0, 340, 200)
             rectBorder.left = (screen_width - rectBorder.width)/2
@@ -573,6 +608,7 @@ class GameOver():
                 if event.key == locals.K_BACKSPACE and len(self.name) > 0:
                     self.name.pop(-1)
                     self.RenderName()
+                    deleteSound.play()
                 
                 # when player press return and the name is typed add this name to the leaderboard
                 elif event.key == locals.K_RETURN and len(self.name) > 0:
@@ -586,6 +622,7 @@ class GameOver():
                 if letter.isalpha() and len(self.name) < self.maxLenOfName:
                     self.name.append(letter.upper())
                     self.RenderName()
+                    typeSound.play()
         
 
     def RenderGameOver(self):

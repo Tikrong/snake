@@ -25,5 +25,34 @@ myfont.antialiased = False
 myfontSmall = pygame.freetype.Font("clacon2.ttf", 16)
 myfontSmall.antialiased = False
 
-for i in range(3):
-    print(i)
+# sounds
+movementSound = pygame.mixer.Sound("sounds\movement.wav")
+gotFoodSound = pygame.mixer.Sound("sounds\\food.wav")
+collisionSound = pygame.mixer.Sound("sounds\\collision.wav")
+tornOnSound = pygame.mixer.Sound("sounds\\turnon.wav")
+menuChoiceSound = pygame.mixer.Sound("sounds\\menu.wav")
+mainMenuSound = pygame.mixer.Sound("sounds\\mainmenu.wav")
+typeSound = pygame.mixer.Sound("sounds\\type.wav")
+deleteSound = pygame.mixer.Sound("sounds\\delete.wav")
+victorySound = pygame.mixer.Sound("sounds\\victory.wav")
+
+ant = 300
+def IncreaseDifficulty(tmp):
+        # 15 point
+        if tmp > 200:
+            tmp -= 20
+        # 45 points
+        elif tmp > 100:
+            tmp -= 7
+        # 75 points
+        elif tmp > 50:
+            tmp -= 4
+        # 102 points
+        elif tmp > 25:
+            tmp - 2
+        return tmp
+
+for i in range(34):
+    ant = IncreaseDifficulty(ant)
+    print(i*3, ant)
+

@@ -19,16 +19,15 @@ Credits
 Leaderboard
 
 Other
-- add sounds
-- add obstacles
+
 - remove everything you can from update function
 
+Future build
+- add obstacles
+- add AI
 
 # BUGS
 
-# Credits
-skull - https://www.pixilart.com/art/just-a-skull-and-bones-afd73ef8e6a0ecd
-snake - http://pixelartmaker.com/art/12b7d2d3028378e
 
 
 

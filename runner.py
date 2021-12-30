@@ -15,6 +15,7 @@ class StateMachine():
     def __init__(self):
         self.currentState = MainMenu(screen, self)
         self.running = True
+        tornOnSound.play()
 
     def Start(self):
         try:
@@ -26,20 +27,11 @@ class StateMachine():
         self.currentState.Update()
 
     def ChangeState(self, State):
-        self.ReloadStates()
         self.currentState = State
         self.Start()
-        print("changing state")
 
     def Quit(self):
         self.running = False
-
-    def ReloadStates(self):
-        self.states = {"mainMenu": MainMenu(screen, self),
-                        "credits": Credits(screen, self),
-                        "leaderboard": Score(screen, self),
-                        "gameLoop": Game(screen, self),
-                        "gameOver": GameOver(screen, self, 3)}
 
 stateMachine = StateMachine()
 
