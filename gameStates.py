@@ -35,6 +35,7 @@ class MainMenu():
                     return
                     # Start credits
             
+    def Start(self):
         self.screen.fill(BLACK)
         # game logo
         rect = myfont.get_rect("SNAKE")
@@ -80,8 +81,6 @@ class MainMenu():
         except FileNotFoundError:
             print("Snake logo isn't found")
 
-        
-
         pygame.display.flip()
 
 class Credits():
@@ -98,6 +97,9 @@ class Credits():
                 if event.key == locals.K_m:
                     self.stateMachine.ChangeState(MainMenu(self.screen, self.stateMachine))
                     mainMenuSound.play()
+
+    def Start(self):
+        
             
         self.screen.fill(BLACK)
         # game logo
@@ -135,32 +137,19 @@ class Credits():
                 rect.top = (rect.height+10)*i + 50
                 pygame.draw.line(self.screen, WHITE, (rect.left, rect.top + rect.height/2), (rect.left+100, rect.top + rect.height/2))
                 i += 1
+                pygame.display.flip()
             else:
                 rect = myfontSmall.get_rect(line.upper())
                 rect.left = 20
                 rect.top = (rect.height+10)*i + 50
                 myfontSmall.render_to(self.screen, rect, None, WHITE)
                 i += 1
+                pygame.display.flip()
 
 
         #self.RenderText()
 
         pygame.display.flip()
-
-    def RenderText(self):
-        text = "SOME TEXT AND INFO"
-        tmp = ""
-        for i in range(len(text)):
-            tmp += text[i]
-            rect = myfont.get_rect(tmp)
-            rect.left = 20
-            rect.top = 100
-            myfont.render_to(self.screen, rect, None, WHITE)
-            pygame.display.flip()
-            time.sleep(0.1)
-                
-
-
 
 class Game():
     def __init__(self, screen, stateMachine):
@@ -192,7 +181,6 @@ class Game():
         # 102 points
         elif self.MoveEveryMilliseconds > 25:
             self.MoveEveryMilliseconds - 2
-        print(self.MoveEveryMilliseconds)
     
     # this function draws the collision of the snake
     def DrawCollision(self):

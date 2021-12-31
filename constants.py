@@ -52,7 +52,3 @@ def IncreaseDifficulty(tmp):
             tmp - 2
         return tmp
 
-for i in range(34):
-    ant = IncreaseDifficulty(ant)
-    print(i*3, ant)
-
