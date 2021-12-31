@@ -3,8 +3,6 @@ from pygame import locals
 import pygame.freetype
 from gameStates import *
 from constants import *
-from score import *
-from gameover import *
 
 
 pygame.init()
