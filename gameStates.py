@@ -262,7 +262,7 @@ class Game():
             movementSound.play()
             self.DrawGameField()
 
-        self.timeSinceLastMovement += self.clock.tick(60)
+        self.timeSinceLastMovement += self.clock.tick(120)
 
     def Start(self):
         self.DrawGameField()
