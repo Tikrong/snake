@@ -5,4 +5,4 @@ To run it you need to install pygame (use "pip install pygame") and then just ru
 
 ---
 
-If you find any bugs feel free to contact me here or via email tikrong@mail.ru
+If you find any bugs or want to leave feedback feel free to contact me here or via email tikrong@mail.ru
