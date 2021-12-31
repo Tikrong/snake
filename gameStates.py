@@ -73,7 +73,7 @@ class MainMenu():
 
         # render logo
         try:
-            logo = pygame.image.load("snake_logo.png")
+            logo = pygame.image.load(os.path.join("img", "snake_logo.png"))
             logo.convert_alpha()
             logo = pygame.transform.scale(logo, (150,150))
             rectLogo = pygame.Rect((screen_width-logo.get_width())/2, rectQuit.bottom + 100, 0,0)
@@ -497,7 +497,7 @@ class GameOver():
             # Render Victory sign
             # render skull
             try:
-                cup = pygame.image.load("cup_fz.png")
+                cup = pygame.image.load(os.path.join("img","cup_fz.png"))
                 cup.convert_alpha()
                 cup = pygame.transform.scale(cup, (60,60))
                 rectCup = pygame.Rect((screen_width-cup.get_width())/2, rectGameOver.bottom + 10, cup.get_width(), cup.get_height())
@@ -552,7 +552,7 @@ class GameOver():
             
             # render skull
             try:
-                skull = pygame.image.load("skull_fz.png")
+                skull = pygame.image.load(os.path.join("img","skull_fz.png"))
                 skull.convert_alpha()
                 skull = pygame.transform.scale(skull, (60,50))
                 rectSkull = pygame.Rect((screen_width-skull.get_width())/2, rectGameOver.bottom + 10, skull.get_width(), skull.get_height())

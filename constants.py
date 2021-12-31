@@ -1,5 +1,6 @@
 import pygame
 import pygame.freetype
+import os
 
 pygame.init()
 
@@ -20,21 +21,21 @@ tile_size = 20
 gameMenuHeight = 40
 
 # fonts
-myfont = pygame.freetype.Font("clacon2.ttf", 32)
+myfont = pygame.freetype.Font(os.path.join("fonts", "clacon2.ttf"), 32)
 myfont.antialiased = False
-myfontSmall = pygame.freetype.Font("clacon2.ttf", 16)
+myfontSmall = pygame.freetype.Font(os.path.join("fonts", "clacon2.ttf"), 16)
 myfontSmall.antialiased = False
 
 # sounds
-movementSound = pygame.mixer.Sound("sounds\movement.wav")
-gotFoodSound = pygame.mixer.Sound("sounds\\food.wav")
-collisionSound = pygame.mixer.Sound("sounds\\collision.wav")
-tornOnSound = pygame.mixer.Sound("sounds\\turnon.wav")
-menuChoiceSound = pygame.mixer.Sound("sounds\\menu.wav")
-mainMenuSound = pygame.mixer.Sound("sounds\\mainmenu.wav")
-typeSound = pygame.mixer.Sound("sounds\\type.wav")
-deleteSound = pygame.mixer.Sound("sounds\\delete.wav")
-victorySound = pygame.mixer.Sound("sounds\\victory.wav")
+movementSound = pygame.mixer.Sound(os.path.join("sounds", "movement.wav"))
+gotFoodSound = pygame.mixer.Sound(os.path.join("sounds", "food.wav"))
+collisionSound = pygame.mixer.Sound(os.path.join("sounds", "collision.wav"))
+tornOnSound = pygame.mixer.Sound(os.path.join("sounds", "turnon.wav"))
+menuChoiceSound = pygame.mixer.Sound(os.path.join("sounds", "menu.wav"))
+mainMenuSound = pygame.mixer.Sound(os.path.join("sounds", "mainmenu.wav"))
+typeSound = pygame.mixer.Sound(os.path.join("sounds", "type.wav"))
+deleteSound = pygame.mixer.Sound(os.path.join("sounds", "delete.wav"))
+victorySound = pygame.mixer.Sound(os.path.join("sounds", "victory.wav"))
 
 ant = 300
 def IncreaseDifficulty(tmp):
