@@ -1,7 +1,8 @@
 # snake
 My version of snake game on python. Made to practice python and just for fun. 
 
-To run it you need to install pygame (use "pip install pygame") and then just run "runner.py" (no pun intended), everything should work fine. I used virtual environment and installed pygame there, so if you manage to activate it then the game should work without additional installation of pygame on your system.
+First you should install pygame (pip install -r requirements.py). It's more convenient to do in in a virtual environment.
+The game was testep on Python 3.10. To run it you just need to run "runner.py" (no pun intended), everything should work fine.
 
 ---
 

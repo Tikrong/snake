@@ -13,6 +13,7 @@ class MainMenu():
         self.screen = screen
         self.stateMachine = stateMachine
     
+    # TODO сейчас реагирует только на английскую раскладку клавиатуры, нужно это исправить
     def Update(self):
         for event in pygame.event.get():
             if event.type == locals.QUIT:
